@@ -4,23 +4,18 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFAudio.AVAudioPlayer
 import platform.Foundation.NSURL
 import platform.Foundation.*
+import toddlergames.composeapp.generated.resources.Res
 
 class IosSoundPlayer(): SoundPlayer {
     private var audioPlayer: AVAudioPlayer? = null
 
     @OptIn(ExperimentalForeignApi::class)
     override suspend fun playSound(resourcePath: String) {
-        try {
-            val bundle = NSBundle.mainBundle
-            val path = bundle.pathForResource(resourcePath.substringBeforeLast("."), "mp3")
-
-            if (path != null) {
-                val url = NSURL.fileURLWithPath(path)
-                audioPlayer = AVAudioPlayer(contentsOfURL = url, error = null)
-                audioPlayer?.play()
-            }
-        } catch (e: Exception) {
-            println("Error playing sound: ${e.message}")
+        val uri = Res.getUri("files/$resourcePath")
+        NSURL.URLWithString(URLString = uri)?.let { media ->
+            val avAudioPlayer = AVAudioPlayer(media, error = null)
+            avAudioPlayer.prepareToPlay()
+            avAudioPlayer.play()
         }
     }
 
