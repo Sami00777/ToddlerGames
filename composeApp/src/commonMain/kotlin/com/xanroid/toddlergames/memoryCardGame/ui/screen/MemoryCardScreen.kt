@@ -1,13 +1,10 @@
 package com.xanroid.toddlergames.memoryCardGame.ui.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Window
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.xanroid.toddlergames.memoryCardGame.ui.component.AlertDialogExample
 import com.xanroid.toddlergames.memoryCardGame.ui.component.FixedGrid
 import com.xanroid.toddlergames.memoryCardGame.ui.component.VictoryDialog
 import com.xanroid.toddlergames.memoryCardGame.ui.viewmodel.MemoryCardAction
@@ -30,8 +27,6 @@ fun MemoryCardScreen(
             onPlayAgain = {
                 viewmodel.processAction(MemoryCardAction.OnResetGame)
             },
-            movesCount = 0,
-            timeElapsed = ""
         )
     }
 

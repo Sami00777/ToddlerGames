@@ -20,14 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.delay
 
 @Composable
 fun VictoryDialog(
     onDismissRequest: () -> Unit,
     onPlayAgain: () -> Unit,
-    movesCount: Int = 0,
-    timeElapsed: String = "0:00",
 ) {
     var visible by remember { mutableStateOf(false) }
 
@@ -102,25 +99,6 @@ fun VictoryDialog(
                             color = Color(0xFF424242),
                             textAlign = TextAlign.Center
                         )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        // Stats Section
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            StatCard(
-                                label = "Moves",
-                                value = movesCount.toString(),
-                                icon = "🎯"
-                            )
-                            StatCard(
-                                label = "Time",
-                                value = timeElapsed,
-                                icon = "⏱️"
-                            )
-                        }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
@@ -209,48 +187,6 @@ fun AnimatedTrophyIcon() {
 }
 
 @Composable
-fun StatCard(
-    label: String,
-    value: String,
-    icon: String
-) {
-    Card(
-        modifier = Modifier
-            .width(140.dp)
-            .height(100.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF5F5F5)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = icon,
-                fontSize = 32.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF424242)
-            )
-            Text(
-                text = label,
-                fontSize = 14.sp,
-                color = Color(0xFF757575)
-            )
-        }
-    }
-}
-
-@Composable
 fun FloatingParticle(index: Int) {
     val infiniteTransition = rememberInfiniteTransition()
 
@@ -287,27 +223,4 @@ fun FloatingParticle(index: Int) {
                 Color(0xFFFFB300).copy(alpha = 0.6f)
             )
     )
-}
-
-// Usage Example
-@Composable
-fun GameScreenWithDialog() {
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
-        VictoryDialog(
-            onDismissRequest = { showDialog = false },
-            onPlayAgain = {
-                showDialog = false
-                // Reset game logic here
-            },
-            movesCount = 24,
-            timeElapsed = "2:45"
-        )
-    }
-
-    // Your game content
-    Button(onClick = { showDialog = true }) {
-        Text("Show Victory Dialog")
-    }
 }
