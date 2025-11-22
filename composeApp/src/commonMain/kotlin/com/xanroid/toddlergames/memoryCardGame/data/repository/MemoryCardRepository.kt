@@ -1,10 +1,10 @@
-package com.xanroid.toddlergames.MemoryCardGame.data.repository
+package com.xanroid.toddlergames.memoryCardGame.data.repository
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.xanroid.toddlergames.MemoryCardGame.ui.model.MemoryCard
+import com.xanroid.toddlergames.memoryCardGame.ui.model.MemoryCard
 
 interface MemoryCardRepository {
     fun getMemoryCardList(): List<MemoryCard>

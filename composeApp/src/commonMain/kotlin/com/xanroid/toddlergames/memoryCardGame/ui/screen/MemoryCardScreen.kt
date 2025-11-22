@@ -1,4 +1,4 @@
-package com.xanroid.toddlergames.MemoryCardGame.ui.screen
+package com.xanroid.toddlergames.memoryCardGame.ui.screen
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -7,10 +7,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.xanroid.toddlergames.MemoryCardGame.ui.component.AlertDialogExample
-import com.xanroid.toddlergames.MemoryCardGame.ui.component.FixedGrid
-import com.xanroid.toddlergames.MemoryCardGame.ui.viewmodel.MemoryCardAction
-import com.xanroid.toddlergames.MemoryCardGame.ui.viewmodel.MemoryCardViewModel
+import com.xanroid.toddlergames.memoryCardGame.ui.component.AlertDialogExample
+import com.xanroid.toddlergames.memoryCardGame.ui.component.FixedGrid
+import com.xanroid.toddlergames.memoryCardGame.ui.component.VictoryDialog
+import com.xanroid.toddlergames.memoryCardGame.ui.viewmodel.MemoryCardAction
+import com.xanroid.toddlergames.memoryCardGame.ui.viewmodel.MemoryCardViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -22,16 +23,15 @@ fun MemoryCardScreen(
     val uiState by viewmodel.uiState.collectAsState()
 
     if (uiState.isDialogShown){
-        AlertDialogExample(
+        VictoryDialog(
             onDismissRequest = {
-
+                viewmodel.processAction(MemoryCardAction.OnDismissDialog)
             },
-            onConfirmation = {
+            onPlayAgain = {
                 viewmodel.processAction(MemoryCardAction.OnResetGame)
             },
-            dialogTitle = "You Won",
-            dialogText = "Do you want to play again?",
-            icon = Icons.Filled.Window
+            movesCount = 0,
+            timeElapsed = ""
         )
     }
 

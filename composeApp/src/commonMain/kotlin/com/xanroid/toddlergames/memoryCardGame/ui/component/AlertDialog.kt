@@ -1,0 +1,313 @@
+package com.xanroid.toddlergames.memoryCardGame.ui.component
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
+
+@Composable
+fun VictoryDialog(
+    onDismissRequest: () -> Unit,
+    onPlayAgain: () -> Unit,
+    movesCount: Int = 0,
+    timeElapsed: String = "0:00",
+) {
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.7f)),
+            contentAlignment = Alignment.Center
+        ) {
+            // Animated background particles
+            repeat(8) { index ->
+                FloatingParticle(index = index)
+            }
+
+            // Main dialog card
+            androidx.compose.animation.AnimatedVisibility(
+                visible = visible,
+                enter = androidx.compose.animation.fadeIn(
+                    animationSpec = tween(500)
+                ) + androidx.compose.animation.scaleIn(
+                    initialScale = 0.8f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                )
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .wrapContentHeight(),
+                    shape = RoundedCornerShape(32.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 24.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Trophy/Star Icon with animation
+                        AnimatedTrophyIcon()
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Victory Title
+                        Text(
+                            text = "🎉 Victory! 🎉",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFFFB300),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "You matched all the cards!",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF424242),
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // Stats Section
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            StatCard(
+                                label = "Moves",
+                                value = movesCount.toString(),
+                                icon = "🎯"
+                            )
+                            StatCard(
+                                label = "Time",
+                                value = timeElapsed,
+                                icon = "⏱️"
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        // Play Again Button
+                        Button(
+                            onClick = onPlayAgain,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFFB300)
+                            )
+                        ) {
+                            Text(
+                                text = "Play Again",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Close Button
+                        TextButton(
+                            onClick = onDismissRequest,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Close",
+                                fontSize = 16.sp,
+                                color = Color(0xFF757575)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AnimatedTrophyIcon() {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    val rotation by infiniteTransition.animateFloat(
+        initialValue = -10f,
+        targetValue = 10f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .size(120.dp)
+            .scale(scale)
+            .rotate(rotation)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFFFD54F),
+                        Color(0xFFFFB300)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "🏆",
+            fontSize = 64.sp
+        )
+    }
+}
+
+@Composable
+fun StatCard(
+    label: String,
+    value: String,
+    icon: String
+) {
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .height(100.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF5F5F5)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = icon,
+                fontSize = 32.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = value,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF424242)
+            )
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = Color(0xFF757575)
+            )
+        }
+    }
+}
+
+@Composable
+fun FloatingParticle(index: Int) {
+    val infiniteTransition = rememberInfiniteTransition()
+
+    val offsetY by infiniteTransition.animateFloat(
+        initialValue = (index * 100).toFloat(),
+        targetValue = -200f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 3000 + (index * 200),
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    val offsetX by infiniteTransition.animateFloat(
+        initialValue = (index * 50).toFloat(),
+        targetValue = (index * 50 + 30).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 2000,
+                easing = FastOutSlowInEasing
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .offset(x = offsetX.dp, y = offsetY.dp)
+            .size(8.dp)
+            .clip(CircleShape)
+            .background(
+                Color(0xFFFFB300).copy(alpha = 0.6f)
+            )
+    )
+}
+
+// Usage Example
+@Composable
+fun GameScreenWithDialog() {
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        VictoryDialog(
+            onDismissRequest = { showDialog = false },
+            onPlayAgain = {
+                showDialog = false
+                // Reset game logic here
+            },
+            movesCount = 24,
+            timeElapsed = "2:45"
+        )
+    }
+
+    // Your game content
+    Button(onClick = { showDialog = true }) {
+        Text("Show Victory Dialog")
+    }
+}

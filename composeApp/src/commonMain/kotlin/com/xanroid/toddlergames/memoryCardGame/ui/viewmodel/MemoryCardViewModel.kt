@@ -1,9 +1,12 @@
-package com.xanroid.toddlergames.MemoryCardGame.ui.viewmodel
+package com.xanroid.toddlergames.memoryCardGame.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.xanroid.toddlergames.MemoryCardGame.data.repository.MemoryCardRepository
-import com.xanroid.toddlergames.MemoryCardGame.ui.model.MemoryCard
+import com.xanroid.toddlergames.memoryCardGame.data.repository.MemoryCardRepository
+import com.xanroid.toddlergames.memoryCardGame.domain.state.MatchCardResult
+import com.xanroid.toddlergames.memoryCardGame.domain.usecase.MatchCardUseCase
+import com.xanroid.toddlergames.memoryCardGame.ui.model.MemoryCard
+import com.xanroid.toddlergames.memoryCardGame.utils.SoundPlayer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,21 +16,19 @@ import kotlinx.coroutines.launch
 
 data class MemoryCardUiState(
     val listOfCard: List<MemoryCard> = emptyList(),
-    val isReadyToMatch: Boolean = false,
     val isDialogShown: Boolean = false,
 )
-
-sealed class MemoryCardUiEvent {
-    data object ShowingDialog: MemoryCardUiEvent()
-}
 
 sealed class MemoryCardAction {
     data class OnCardClicked(val memoryCard: MemoryCard) : MemoryCardAction()
     data object OnResetGame: MemoryCardAction()
+    data object OnDismissDialog: MemoryCardAction()
 }
 
 class MemoryCardViewModel(
-    private val memoryCardRepository: MemoryCardRepository
+    private val memoryCardRepository: MemoryCardRepository,
+    private val matchCardUseCase: MatchCardUseCase,
+    private val soundPlayer: SoundPlayer,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MemoryCardUiState())
@@ -44,7 +45,6 @@ class MemoryCardViewModel(
         _uiState.update {
             it.copy(
                 listOfCard = memoryCardRepository.getMemoryCardList(),
-                isReadyToMatch = false,
                 isDialogShown = false,
             )
         }
@@ -67,7 +67,6 @@ class MemoryCardViewModel(
                 listOfCard = ui.listOfCard.map {
                     it.copy(isFaceUp = false)
                 },
-                isReadyToMatch = false,
             )
         }
         _isInPreview.update { false }
@@ -82,62 +81,56 @@ class MemoryCardViewModel(
                 is MemoryCardAction.OnResetGame -> {
                     startNewGame()
                 }
+                is MemoryCardAction.OnDismissDialog -> {
+                    _uiState.update { ui ->
+                        ui.copy(isDialogShown = false)
+                    }
+                }
             }
         }
     }
 
-    private fun handleOnCardClicked(memoryCard: MemoryCard) {
+    private suspend fun handleOnCardClicked(memoryCard: MemoryCard) {
         if (_isInPreview.value) {
             _isInPreview.update { false }
-            _uiState.update { ui ->
-                ui.copy(
-                    listOfCard = ui.listOfCard.map {
-                        it.copy(isFaceUp = it.isMatched)
-                    },
-                    isReadyToMatch = false,
-                )
-            }
+            endPreview()
         }
-        if (!uiState.value.isReadyToMatch) {
-            _uiState.update { ui ->
-                ui.copy(
-                    listOfCard = ui.listOfCard.map {
-                        if (memoryCard.uniqueId == it.uniqueId) it.copy(isFaceUp = true) else it
-                    },
-                    isReadyToMatch = true
-                )
-            }
-        } else {
-            val firstCard = uiState.value.listOfCard.find { it.isFaceUp && !it.isMatched }
-            if (firstCard?.uniqueId == memoryCard.uniqueId) return
-            if ((firstCard?.pairId == memoryCard.pairId)) {
+
+        val currentCards = uiState.value.listOfCard
+        val firstCard = currentCards.find { it.isFaceUp && !it.isMatched }
+
+        val result = matchCardUseCase(
+            cards = uiState.value.listOfCard,
+            firstCard = firstCard ?: memoryCard,
+            secondCard = if (firstCard != null) memoryCard else null
+        )
+
+        when (result) {
+            is MatchCardResult.FirstCardSelected -> {
                 _uiState.update { ui ->
                     ui.copy(
-                        listOfCard = ui.listOfCard.map {
-                            if (memoryCard.pairId == it.pairId) it.copy(
-                                isFaceUp = true,
-                                isMatched = true
-                            ) else it.copy(isFaceUp = it.isMatched)
-                        },
-                        isReadyToMatch = false
+                        listOfCard = result.cards,
                     )
                 }
-                val isWin = uiState.value.listOfCard.all { it.isMatched }
-                if (isWin) {
-                    _uiState.update { ui ->
-                        ui.copy(
-                            isDialogShown = true
-                        )
-                    }
+            }
+            is MatchCardResult.SameCardClicked -> {
+                // Do nothing
+            }
+            is MatchCardResult.CardMatched -> {
+                soundPlayer.playSound("success.mp3")
+                _uiState.update { ui ->
+                    ui.copy(
+                        listOfCard = result.cards,
+                        isDialogShown = result.isWinningMove
+                    )
                 }
-            } else {
+            }
+            is MatchCardResult.CardDoNotMatch -> {
+                soundPlayer.playSound("incorrect.mp3")
                 _isInPreview.update { true }
                 _uiState.update { ui ->
                     ui.copy(
-                        listOfCard = ui.listOfCard.map {
-                            if (memoryCard.uniqueId == it.uniqueId) it.copy(isFaceUp = true) else it
-                        },
-                        isReadyToMatch = false
+                        listOfCard = result.cards,
                     )
                 }
             }

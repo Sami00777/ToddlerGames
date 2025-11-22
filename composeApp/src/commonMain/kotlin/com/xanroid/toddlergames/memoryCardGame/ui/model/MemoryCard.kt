@@ -1,4 +1,4 @@
-package com.xanroid.toddlergames.MemoryCardGame.ui.model
+package com.xanroid.toddlergames.memoryCardGame.ui.model
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Phone
