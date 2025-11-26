@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.xanroid.toddlergames.memoryCardGame.ui.model.IMAGES
 import com.xanroid.toddlergames.memoryCardGame.ui.model.MemoryCard
 
 interface MemoryCardRepository {
@@ -31,9 +32,19 @@ class MemoryCardRepositoryImpl: MemoryCardRepository {
             Icons.Filled.Circle,
         )
 
+        val listOfImages = listOf(
+            IMAGES.MONKEY,
+            IMAGES.LION,
+            IMAGES.EAGLE,
+            IMAGES.RABBIT,
+            IMAGES.ROOSTER,
+            IMAGES.SHARK,
+        )
+
         return buildCardList(
             icons = listOfIcons,
-            colors = listOfColors
+            colors = listOfColors,
+            listOfImages = listOfImages,
         )
 
     }
@@ -41,6 +52,7 @@ class MemoryCardRepositoryImpl: MemoryCardRepository {
     private fun buildCardList(
         icons: List<ImageVector>,
         colors: List<Color>,
+        listOfImages: List<IMAGES>,
     ):List<MemoryCard> {
         val shuffledIcons = icons.shuffled()
         val shuffledColors = colors.shuffled()
@@ -50,6 +62,7 @@ class MemoryCardRepositoryImpl: MemoryCardRepository {
                 pairId = index,
                 icon = imageVector,
                 color = shuffledColors[index],
+                image = listOfImages[index],
             )
         }.let { list ->
             (list + list).shuffled().mapIndexed { index, data ->

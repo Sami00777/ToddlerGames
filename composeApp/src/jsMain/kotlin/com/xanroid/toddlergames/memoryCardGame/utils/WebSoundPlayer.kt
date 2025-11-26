@@ -1,7 +1,6 @@
 package com.xanroid.toddlergames.memoryCardGame.utils
 
 import org.w3c.dom.Audio
-import kotlinx.browser.window
 
 class WebSoundPlayer : SoundPlayer {
 

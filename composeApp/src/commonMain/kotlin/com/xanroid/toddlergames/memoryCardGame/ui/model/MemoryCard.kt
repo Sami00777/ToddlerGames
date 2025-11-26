@@ -10,6 +10,17 @@ data class MemoryCard(
     val uniqueId: Int = 0,
     val icon: ImageVector = Icons.Default.Phone,
     val color: Color = Color.Black,
+    val image: IMAGES = IMAGES.QUESTION_MARK,
     val isMatched: Boolean = false,
     val isFaceUp: Boolean = false,
 )
+
+enum class IMAGES {
+    QUESTION_MARK,
+    MONKEY,
+    LION,
+    EAGLE,
+    RABBIT,
+    ROOSTER,
+    SHARK,
+}
